@@ -19,6 +19,8 @@ curl_wrap() {
          -H "Content-Type: application/json" \
          -H "Accept: application/json" \
          -H "Authorization: Bearer $KEY" \
+         -H "CF-Access-Client-Id: ${CF_ACCESS_CLIENT_ID}" \
+         -H "CF-Access-Client-Secret: ${CF_ACCESS_CLIENT_SECRET}" \
          --data-binary @$FILE \
          $URL
 }
