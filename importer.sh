@@ -5,16 +5,27 @@ curl_wrap() {
   KEY=$2
   URL=$3
   HTTP_VERB=$4
-  [[ -z "$HTTP_VERB" ]] && HTTP_VERB=POST
 
-  curl --verbose --fail -k -X$HTTP_VERB \
-    -H "Content-Type: application/json" \
-    -H "Accept: application/json" \
-    -H "Authorization: Bearer $KEY" \
-    -H "CF-Access-Client-Id: ${CF_ACCESS_CLIENT_ID}" \
-    -H "CF-Access-Client-Secret: ${CF_ACCESS_CLIENT_SECRET}" \
-    --data-binary @$FILE \
-    $URL
+  declare -a opts=(
+    --verbose
+    --fail
+    --show-error
+    --include
+    --header "Accept:application/json"
+    --header "Authorization: Bearer ${KEY}"
+    --header "CF-Access-Client-Id: ${CF_ACCESS_CLIENT_ID}"
+    --header "CF-Access-Client-Secret: ${CF_ACCESS_CLIENT_SECRET}"
+    --header "Content-Type:application/json"
+    --data-binary @$FILE
+  )
+
+  if [[ -n "${HTTP_VERB}" ]]; then
+    opts+=(--request "${HTTP_VERB}")
+  fi
+
+  opts+=("${URL}")
+
+  curl "${opts[@]}"
 }
 
 import_file() {
