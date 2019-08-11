@@ -1,14 +1,5 @@
 #!/usr/bin/env bash
 
-# Load config.sh file passed as command line argument
-. "$1"
-
-declare -aa ORGMAP
-for row in "${ORGS[@]}"; do
-    IFS=':' read -r -a values <<< "$row"
-    ORGMAP[${values[0]}]=${values[1]}
-done
-
 curl_wrap() {
     FILE=$1
     KEY=$2
@@ -16,7 +7,7 @@ curl_wrap() {
     HTTP_VERB=$4
     [[ -z "$HTTP_VERB" ]] && HTTP_VERB=POST
 
-    curl --fail -k -X$HTTP_VERB \
+    curl --verbose --fail -k -X$HTTP_VERB \
          -H "Content-Type: application/json" \
          -H "Accept: application/json" \
          -H "Authorization: Bearer $KEY" \
@@ -35,7 +26,6 @@ import_file() {
         echo "$FILE not found." >>/dev/stderr
         return
     fi
-
     echo "Processing $FILE file..."
     curl_wrap "$FILE" "$KEY" "${HOST}/api/$TYPE"
     CURL_EXIT=$?
@@ -52,6 +42,15 @@ import_file() {
     fi
 }
 
+# Load config.sh file passed as command line argument
+. "$1"
+shift
+
+declare -aa ORGMAP
+for row in "${ORGS[@]}"; do
+    IFS=':' read -r -a values <<< "$row"
+    ORGMAP[${values[0]}]=${values[1]}
+done
 
 if [[ $# -eq 0 ]]; then
     ARGS=(${FILE_DIR}/*/*/*.json)
@@ -79,6 +78,9 @@ for FILE in "${ARGS[@]}"; do
         ;;
     datasources)
         import_file $FILE "$KEY" 'datasources'
+        ;;
+    folders)
+        import_file $FILE "$KEY" 'folders'
         ;;
     *)
         echo "Unknown type $TYPE"

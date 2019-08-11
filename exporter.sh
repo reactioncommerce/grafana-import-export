@@ -29,25 +29,35 @@ for row in "${ORGS[@]}" ; do
     KEY=${row#*:}
     DIR="$FILE_DIR/$ORG"
 
-    mkdir -p "$DIR/dashboards"
     mkdir -p "$DIR/datasources"
+    mkdir -p "$DIR/folders"
+    mkdir -p "$DIR/dashboards"
     mkdir -p "$DIR/alert-notifications"
 
-    for dash in $(fetch_fields "${KEY}" '/search?query=&' 'uri'); do
-        DB=$(echo "${dash}" | sed 's,db/,,g').json
-        echo "$DB"
-        api_request "${KEY}" "/dashboards/${dash}" | jq 'del(.overwrite,.dashboard.version,.meta.created,.meta.createdBy,.meta.updated,.meta.updatedBy,.meta.expires,.meta.version)' > "$DIR/dashboards/$DB"
+    for uid in $(fetch_fields "${KEY}" '/folders' 'uid'); do
+        out="folders/${uid}.json…"
+        echo -n "${out}"
+        api_request "$KEY" "/folders/${uid}" | jq 'del(.id)' > "${DIR}/${out}"
+        echo ✓
     done
 
     for id in $(fetch_fields "${KEY}" '/datasources' 'id'); do
-        DS=$(echo "$(fetch_fields "${KEY}" "/datasources/${id}" 'name')" | sed 's/ /-/g').json
-        echo "${DS}"
-        api_request "$KEY" "/datasources/${id}" | jq '' > "$DIR/datasources/${id}.json"
+        out="datasources/${id}.json…"
+        echo -n "${out}"
+        api_request "$KEY" "/datasources/${id}" | jq '' > "${DIR}/${out}"
+        echo ✓
     done
+
+    for dash in $(fetch_fields "${KEY}" '/search?query=&' 'uri'); do
+        DB=$(echo "${dash}" | sed 's,db/,,g').json
+        echo "dashboard: $DB"
+        api_request "${KEY}" "/dashboards/${dash}" | jq 'del(.overwrite,.dashboard.version,.meta.created,.meta.createdBy,.meta.updated,.meta.updatedBy,.meta.expires,.meta.version)' > "$DIR/dashboards/$DB"
+    done
+
 
     for id in $(fetch_fields "${KEY}" '/alert-notifications' 'id'); do
         FILENAME=${id}.json
-        echo "${FILENAME}"
+        echo "alert: ${FILENAME}"
         api_request "/alert-notifications/${id}" \
           | jq 'del(.created,.updated)' > "$DIR/alert-notifications/$FILENAME"
     done
