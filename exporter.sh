@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-. "$(dirname "$0")/config.sh"
+
+# Load config.sh file passed as command line argument
+. "$1"
 
 function api_request() {
     local key=$1
