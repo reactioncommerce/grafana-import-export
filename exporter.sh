@@ -34,13 +34,6 @@ for row in "${ORGS[@]}"; do
   mkdir -p "$DIR/dashboards"
   mkdir -p "$DIR/alert-notifications"
 
-  for uid in $(fetch_fields "${KEY}" '/folders' 'uid'); do
-    out="folders/${uid}.json"
-    echo -n "${out}…"
-    api_request "$KEY" "/folders/${uid}" | jq 'del(.id)' >"${DIR}/${out}"
-    echo ✓
-  done
-
   for id in $(fetch_fields "${KEY}" '/datasources' 'id'); do
     out="datasources/${id}.json"
     echo -n "${out}…"
@@ -48,10 +41,18 @@ for row in "${ORGS[@]}"; do
     echo ✓
   done
 
+  for uid in $(fetch_fields "${KEY}" '/folders' 'uid'); do
+    out="folders/${uid}.json"
+    echo -n "${out}…"
+    api_request "$KEY" "/folders/${uid}" | jq 'del(.id)' >"${DIR}/${out}"
+    echo ✓
+  done
+
   for dash in $(fetch_fields "${KEY}" '/search?query=&' 'uri'); do
-    DB=$(echo "${dash}" | sed 's,db/,,g').json
-    echo "dashboard: $DB"
-    api_request "${KEY}" "/dashboards/${dash}" | jq 'del(.overwrite,.dashboard.version,.meta.created,.meta.createdBy,.meta.updated,.meta.updatedBy,.meta.expires,.meta.version)' >"$DIR/dashboards/$DB"
+    out="dashboards/$(echo "${dash}" | sed 's,db/,,g').json"
+    echo -n "${out}…"
+    api_request "${KEY}" "/dashboards/${dash}" | jq 'del(.dashboard.id,.dashboard.version,.meta) | .overwrite=true' >"$DIR/${out}"
+    echo ✓
   done
 
   for id in $(fetch_fields "${KEY}" '/alert-notifications' 'id'); do
