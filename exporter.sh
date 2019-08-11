@@ -35,15 +35,15 @@ for row in "${ORGS[@]}"; do
   mkdir -p "$DIR/alert-notifications"
 
   for uid in $(fetch_fields "${KEY}" '/folders' 'uid'); do
-    out="folders/${uid}.json…"
-    echo -n "${out}"
+    out="folders/${uid}.json"
+    echo -n "${out}…"
     api_request "$KEY" "/folders/${uid}" | jq 'del(.id)' >"${DIR}/${out}"
     echo ✓
   done
 
   for id in $(fetch_fields "${KEY}" '/datasources' 'id'); do
-    out="datasources/${id}.json…"
-    echo -n "${out}"
+    out="datasources/${id}.json"
+    echo -n "${out}…"
     api_request "$KEY" "/datasources/${id}" | jq '' >"${DIR}/${out}"
     echo ✓
   done
