@@ -1,0 +1,20 @@
+version: '3.4'
+
+networks:
+  streams:
+    external:
+      name: 'streams.reaction.localhost'
+
+services:
+
+  grafana:
+    image: 'grafana/grafana:5.4.3'
+    networks:
+      streams:
+    ports:
+      - '3001:3000'
+    volumes:
+      - 'reaction-grafana-data:/var/lib/grafana'
+
+volumes:
+  reaction-grafana-data:
