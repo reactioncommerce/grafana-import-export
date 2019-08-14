@@ -58,7 +58,7 @@ for row in "${ORGS[@]}"; do
   for id in $(fetch_fields "${KEY}" '/alert-notifications' 'id'); do
     FILENAME=${id}.json
     echo "alert: ${FILENAME}"
-    api_request "/alert-notifications/${id}" |
+    api_request "${KEY}" "/alert-notifications/${id}" |
       jq 'del(.created,.updated)' >"$DIR/alert-notifications/$FILENAME"
   done
 done
